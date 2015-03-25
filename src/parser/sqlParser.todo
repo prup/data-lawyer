@@ -1,0 +1,8 @@
+No support for OR.
+
+VARCHAR type isn't truly generic enough. Go check.
+
+We don't yet support equality conditions in the from clause. All join
+conditions must necessarily be in the where clause.
+
+Need to figure out how to handle DISTINCT.
