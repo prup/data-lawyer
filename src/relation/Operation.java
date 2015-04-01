@@ -3,13 +3,20 @@ package relation;
 import utils.DataLawyerException;
 
 /**
- * Making the _inputIndices final for safety. We do not expect to change it once
- * we have initialized it. Note that this contract only makes sense when
- * _inputColumns themselves do not change in the class AST. So it is necessary
- * to check that they are also final.
+ * Abstract representation of operations on values.
+ * 
+ * @author prasang
+ * 
  */
 public abstract class Operation {
 	
+	/**
+	 * Making the _inputIndices final for safety. We do not expect to change it
+	 * once we have initialized it. Note that this contract only makes sense
+	 * when _inputColumns themselves do not change in the class AST. So it is
+	 * necessary to check that they are also final.
+	 */
+
 	// What about + and -?
 	
 	public enum OpType {
@@ -37,7 +44,6 @@ public abstract class Operation {
 		}
 	}
 	
-
 	public OpType _op;
 
 	public static UnaryOperation getUnary(String op, Column inputColumnIndex)

@@ -3,10 +3,17 @@ package relation;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import relation.ColumnOptInfo.Redundancy;
+import relation.ColumnOptMetadata.Redundancy;
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to represent the JOIN clause in SQL.
+ * 
+ * It can model a multi-way equijoin operator.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpJoin extends Op {
 
 	private HashMap<Operation, ArrayList<Column>> operationRemover = new HashMap<Operation, ArrayList<Column>>();
@@ -26,11 +33,11 @@ public class OpJoin extends Op {
 
 		// Add the columns of the input relation to the output.
 		for (Column c : input.getColumns())
-			appendColumn(c, new ColumnOptInfo(input.getColumnOptInfo(c)));
+			appendColumn(c, new ColumnOptMetadata(input.getColumnOptInfo(c)));
 	}
 
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo) {
+	public void addOperation(Operation op, ColumnOptMetadata optinfo) {
 		operations().add(op);
 		operationRemover.put(op, new ArrayList<Column>());
 	}

@@ -11,6 +11,15 @@ import utils.MyLogger;
 import experiment.Benchmarker;
 import experiment.MyTimer;
 
+/**
+ * A modified ResultSet class that is used to return the answer to user queries
+ * along with meta information about the evaluation of policies.
+ * 
+ * TODO: Make this implement the interface of ResultSet.
+ * 
+ * @author prasang
+ * 
+ */
 public class ResultSetPlus {
 
 	public Relation query = null;
@@ -114,7 +123,7 @@ public class ResultSetPlus {
 				exptNumber.add(sql, commitTimer.read());
 			} catch (SQLException e) {
 				System.err.println(e);
-			} 
+			}
 		}
 		execBeforeTxEnds(exptNumber);
 		MyTimer commitTimer = new MyTimer();

@@ -3,11 +3,15 @@ package relation;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import utils.DataLawyerException;
 import checker.DB;
 
-
-import utils.DataLawyerException;
-
+/**
+ * {@link Op} to represent tables inside the database.
+ * 
+ * @author prasang
+ * 
+ */
 public class Index extends Relation {
 
 	private String schema;
@@ -24,7 +28,7 @@ public class Index extends Relation {
 		for (String col : columns) {
 			IndexColInfo tcol = new IndexColInfo(col, this);
 			Column c = new Column(tcol, this.counters);
-			appendColumn(c, new ColumnOptInfo());
+			appendColumn(c, new ColumnOptMetadata());
 		}
 	}
 

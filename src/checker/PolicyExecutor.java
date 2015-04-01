@@ -23,6 +23,12 @@ import experiment.ExptConfig;
 import experiment.ExptConfig.TurnOff;
 import experiment.MyTimer;
 
+/**
+ * The overall meta algorithm.
+ * 
+ * @author prasang
+ * 
+ */
 public class PolicyExecutor {
 
 	public static ArrayList<String> getIndexes(Relation policy) {
@@ -45,7 +51,7 @@ public class PolicyExecutor {
 
 	private static boolean isIncremental(final Relation r) throws DataLawyerException {
 		if (!incrementalNessMap.containsKey(r))
-			incrementalNessMap.put(r, PolicyTransformer.isIncremental(r, true));
+			incrementalNessMap.put(r, Policy.isIncremental(r, true));
 		return incrementalNessMap.get(r);
 	}
 
@@ -63,7 +69,7 @@ public class PolicyExecutor {
 	 * @throws SQLException
 	 */
 	private static ResultSetPlus unionTest(final ExptConfig context,
-			final PolicyTransformer policies, final ResultSetPlus results,
+			final Policy policies, final ResultSetPlus results,
 			final LogUtils log, final Benchmarker exptNumber)
 			throws DataLawyerException, SQLException {
 		if (unionedPolicySQL == null) {
@@ -124,7 +130,7 @@ public class PolicyExecutor {
 	}
 
 	private static ResultSetPlus iterativeTest(final ExptConfig context,
-			final PolicyTransformer policies, final ResultSetPlus results,
+			final Policy policies, final ResultSetPlus results,
 			final LogUtils log, final Benchmarker exptNumber,
 			boolean timeIndependent) throws DataLawyerException, SQLException {
 		for (Relation policy : policies.getOnlyPolicies()) {
@@ -179,7 +185,7 @@ public class PolicyExecutor {
 	}
 
 	private static ResultSetPlus interleavedTest(final ExptConfig context,
-			final PolicyTransformer policies, final ResultSetPlus results,
+			final Policy policies, final ResultSetPlus results,
 			final LogUtils log, final Benchmarker exptNumber)
 			throws SQLException, DataLawyerException {
 
@@ -263,7 +269,7 @@ public class PolicyExecutor {
 
 	private static HashMap<Relation, Boolean> executeAndPrune(
 			final HashMap<Relation, Boolean> policiesToCheck,
-			final PolicyTransformer policies, final ExptConfig context,
+			final Policy policies, final ExptConfig context,
 			final ResultSetPlus results, final LogUtils log,
 			final String generatedLogs, final Benchmarker exptNumber)
 			throws SQLException, DataLawyerException {
@@ -321,7 +327,7 @@ public class PolicyExecutor {
 	}
 
 	public static ResultSetPlus ExecuteQuery(final String query,
-			final PolicyTransformer policies, final ExptConfig config,
+			final Policy policies, final ExptConfig config,
 			final Benchmarker benchmarker) throws DataLawyerException, SQLException,
 			UnsupportedDataTypeException {
 		ResultSetPlus result = new ResultSetPlus(ParserWrapper.parseSQL(query));

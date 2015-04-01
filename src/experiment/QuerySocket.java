@@ -27,7 +27,7 @@ import utils.MyLogger;
 import checker.DB;
 import checker.Logs;
 import checker.PolicyExecutor;
-import checker.PolicyTransformer;
+import checker.Policy;
 import checker.ResultSetPlus;
 
 class QuerySocket {
@@ -61,10 +61,10 @@ class QuerySocket {
 	 * @throws DataLawyerException
 	 * @throws IOException
 	 */
-	private static PolicyTransformer getPolicies(final ExptConfig context)
+	private static Policy getPolicies(final ExptConfig context)
 			throws SQLException, JSONException, DataLawyerException, IOException {
 
-		PolicyTransformer policies = new PolicyTransformer();
+		Policy policies = new Policy();
 
 		JSONArray policyJSON = ExptConfig.getPoliciesFromJSON().getJSONArray(
 				"content");
@@ -112,7 +112,7 @@ class QuerySocket {
 						.getString(iCompaction));
 
 			Relation policy = ParserWrapper.parseSQL(policyStr);
-			PolicyTransformer.normalizeAsBoolean(policy);
+			Policy.normalizeAsBoolean(policy);
 
 			// TODO: Generalize this if you are going to publish the code.
 			HashMap<String, String> compactionTest = new HashMap<String, String>();
@@ -343,7 +343,7 @@ class QuerySocket {
 				"/Users/prasang/Sites/wwdum/expts.json", null);
 
 		// Get the policies.
-		PolicyTransformer policies = getPolicies(context);
+		Policy policies = getPolicies(context);
 
 		try {
 			serverSocket = new ServerSocket(QuerySocket.PORT);
@@ -424,7 +424,7 @@ class QuerySocket {
 
 		// 1. Get the policies.
 
-		PolicyTransformer policies = getPolicies(context);
+		Policy policies = getPolicies(context);
 
 		for (Relation policy : policies.getOnlyPolicies()) {
 			System.out.println(policy.getId() + " "

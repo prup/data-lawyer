@@ -4,7 +4,14 @@ import java.util.ArrayList;
 
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to represent the UNION operator in SQL.
+ * 
+ * It can have an arbitrary number of inputs.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpUnion extends Op {
 
 	public OpUnion(Relation first, Relation second) throws DataLawyerException {
@@ -14,7 +21,7 @@ public class OpUnion extends Op {
 			_addInput(second);
 		}
 		for (Column c : first.getColumns())
-			appendColumn(c, new ColumnOptInfo(first.getColumnOptInfo(c)));
+			appendColumn(c, new ColumnOptMetadata(first.getColumnOptInfo(c)));
 	}
 
 	public void addRelation(Relation r) throws DataLawyerException {
@@ -23,7 +30,7 @@ public class OpUnion extends Op {
 	}
 
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo)
+	public void addOperation(Operation op, ColumnOptMetadata optinfo)
 			throws DataLawyerException {
 		throw DataLawyerException.operationNotAllowed();
 	}

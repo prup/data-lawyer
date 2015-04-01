@@ -1,13 +1,22 @@
 package relation;
 
-// TODO: Create an abstract SelectionOperator class and make WhereOperator and HavingOperator subclasses of it, with no additional operations.
+// TODO: Create an abstract SelectionOperator class and make WhereOperator 
+// and HavingOperator subclasses of it, with no additional operations.
 
 import java.util.ArrayList;
 
-import relation.ColumnOptInfo.Redundancy;
+import relation.ColumnOptMetadata.Redundancy;
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to represent the WHERE clause in SQL.
+ * 
+ * It models the selection operation in relational algebra. Currently, it only
+ * models the binary operations defined in {@link BinaryOperation}.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpWhere extends Op {
 
 	public OpWhere(Relation input) throws DataLawyerException {
@@ -15,19 +24,20 @@ public class OpWhere extends Op {
 		_addInput(input);
 
 		for (Column c : input.getColumns())
-			appendColumn(c, new ColumnOptInfo(input.getColumnOptInfo(c)));
+			appendColumn(c, new ColumnOptMetadata(input.getColumnOptInfo(c)));
 	}
 
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo) throws DataLawyerException {
+	public void addOperation(Operation op, ColumnOptMetadata optinfo)
+			throws DataLawyerException {
 		if (!(op instanceof BinaryOperation))
 			throw DataLawyerException.operationNotAllowed();
 		BinaryOperation bop = (BinaryOperation) op;
 		operations().add(bop);
 		if (!hasColumn(bop._leftInputIndex))
-			addOptColInfo(bop._leftInputIndex, new ColumnOptInfo());
+			addOptColInfo(bop._leftInputIndex, new ColumnOptMetadata());
 		if (!hasColumn(bop._rightInputIndex))
-			addOptColInfo(bop._rightInputIndex, new ColumnOptInfo());
+			addOptColInfo(bop._rightInputIndex, new ColumnOptMetadata());
 	}
 
 	@Override

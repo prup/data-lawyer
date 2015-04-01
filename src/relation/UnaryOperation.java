@@ -2,6 +2,12 @@ package relation;
 
 import java.util.ArrayList;
 
+/**
+ * Abstract representation of a unary operation.
+ * 
+ * @author prasang
+ * 
+ */
 public abstract class UnaryOperation extends Operation {
 	public final Column _inputIndex;
 

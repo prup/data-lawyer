@@ -10,11 +10,11 @@ import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 
 import checker.DB;
-import checker.PolicyTransformer;
+import checker.Policy;
 
 import relation.Column;
-import relation.ColumnInfo;
-import relation.ColumnOptInfo;
+import relation.ColumnMetadata;
+import relation.ColumnOptMetadata;
 import relation.Counters;
 import relation.Index;
 import relation.Op;
@@ -184,21 +184,21 @@ public class ParserWrapper {
 
 		Column toRet = null;
 
-		if (ColumnInfo.IsConstant(name)) {
-			ColumnInfo constColInfo = ColumnInfo.getConstantColumn(name);
+		if (ColumnMetadata.IsConstant(name)) {
+			ColumnMetadata constColInfo = ColumnMetadata.getConstantColumn(name);
 			toRet = new Column(constColInfo, inputRelation.counters);
 		} else if (Operation.IsAggregate(name)) {
 			// Should never reach here.
 			throw new DataLawyerException("Should not have reached here: "
 					+ tree.toString());
-		} else if (ColumnInfo.isArithmeticOp(name)) {
+		} else if (ColumnMetadata.isArithmeticOp(name)) {
 			ArrayList<Column> inputs = new ArrayList<Column>();
 			for (int i = 0; i < tree.getChildCount(); ++i) {
 				Column inputCol = getNewColumnIfRequired(inputRelation,
 						tree.getChild(i));
 				inputs.add(inputCol);
 			}
-			toRet = new Column(ColumnInfo.getDerivedColumn(name, inputs),
+			toRet = new Column(ColumnMetadata.getDerivedColumn(name, inputs),
 					inputRelation.counters);
 		} else if (name.equalsIgnoreCase("function")) {
 			String funcName = tree.getChild(0).getText();
@@ -209,7 +209,7 @@ public class ParserWrapper {
 						tree.getChild(i));
 				inputs.add(inputCol);
 			}
-			toRet = new Column(ColumnInfo.getDerivedColumn(funcName, inputs),
+			toRet = new Column(ColumnMetadata.getDerivedColumn(funcName, inputs),
 					inputRelation.counters);
 		} else if (name.equalsIgnoreCase("as")) {
 			String alias = tree.getChild(1).getText();
@@ -282,11 +282,11 @@ public class ParserWrapper {
 	//		Relation query1 = parseSQL(src1);
 	//		System.out.println("Are the two queries logically equivalent? " + SQLUtils.equalityModuloConstants(query, query1));
 
-			PolicyTransformer.normalizeAsBoolean(query);
+			Policy.normalizeAsBoolean(query);
 			System.out.println("Generated simplified SQL:\n"
 					+ SQLUtils.convertToSQL(query));
 			System.out.println("Incrementally computable? "
-					+ PolicyTransformer.isIncremental(query, true));
+					+ Policy.isIncremental(query, true));
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -320,7 +320,7 @@ public class ParserWrapper {
 					String operation_string = aggregate.getText();
 					Column input_col_id = getNewColumnIfRequired(input,
 							aggregate.getChild(0));
-					ColumnOptInfo optinfo = input
+					ColumnOptMetadata optinfo = input
 							.getColumnOptInfo(input_col_id);
 					UnaryOperation operation = Operation.getUnary(
 							operation_string, input_col_id);
@@ -419,11 +419,11 @@ public class ParserWrapper {
 			Column right_col_id = getNewColumnIfRequired(input,
 					operation.getChild(1));
 
-			if (!ColumnInfo.allInputsKnown(input, left_col_id))
+			if (!ColumnMetadata.allInputsKnown(input, left_col_id))
 				throw new DataLawyerException(
 						"Parse error in having clause. Accessing a column not in context: "
 								+ operation.getChild(0).toString());
-			if (!ColumnInfo.allInputsKnown(input, right_col_id))
+			if (!ColumnMetadata.allInputsKnown(input, right_col_id))
 				throw new DataLawyerException(
 						"Parse error in having clause. Accessing a column not in context: "
 								+ operation.getChild(1).toString());
@@ -444,7 +444,7 @@ public class ParserWrapper {
 
 		if (select_subtree.getChild(0).getText().equalsIgnoreCase("*")) {
 			for (Column c : input.getColumns())
-				project.appendColumn(c, new ColumnOptInfo());
+				project.appendColumn(c, new ColumnOptMetadata());
 		} else {
 			Column c = null;
 			for (int i = 0; i < select_subtree.getChildCount(); ++i) {
@@ -456,10 +456,10 @@ public class ParserWrapper {
 							+ input.toString());
 					throw e;
 				}
-				if (!ColumnInfo.allInputsKnown(input, c))
+				if (!ColumnMetadata.allInputsKnown(input, c))
 					MyLogger.getLog().warning("Parse warning in select clause. Might be accessing a column not in context: "
 									+ select_subtree.getChild(i).toStringTree());
-				project.appendColumn(c, new ColumnOptInfo());
+				project.appendColumn(c, new ColumnOptMetadata());
 			}
 		}
 
@@ -523,17 +523,17 @@ public class ParserWrapper {
 			Column right_col_id = getNewColumnIfRequired(input,
 					operation.getChild(1));
 
-			if (!ColumnInfo.allInputsKnown(input, left_col_id))
+			if (!ColumnMetadata.allInputsKnown(input, left_col_id))
 				throw new DataLawyerException(
 						"Parse error in where clause. Accessing a column not in context: "
 								+ operation.getChild(0).toString());
-			if (!ColumnInfo.allInputsKnown(input, right_col_id))
+			if (!ColumnMetadata.allInputsKnown(input, right_col_id))
 				throw new DataLawyerException(
 						"Parse error in where clause. Accessing a column not in context: "
 								+ operation.getChild(1).toString());
 
-			if (ColumnInfo.isOverallConstant(left_col_id)
-					|| ColumnInfo.isOverallConstant(right_col_id)) {
+			if (ColumnMetadata.isOverallConstant(left_col_id)
+					|| ColumnMetadata.isOverallConstant(right_col_id)) {
 				if (!(where instanceof OpWhere))
 					where = new OpWhere(input);
 				((OpWhere) where).addOperation(

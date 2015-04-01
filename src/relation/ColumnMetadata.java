@@ -7,7 +7,6 @@ import org.antlr.runtime.tree.Tree;
 import utils.DataLawyerException;
 import utils.StringUtils;
 
-
 enum ValType {
 	INT, VARCHAR, BOOLEAN, FLOAT;
 }
@@ -18,7 +17,7 @@ enum ValType {
  * @author prasang
  * 
  */
-public abstract class ColumnInfo {
+public abstract class ColumnMetadata {
 
 	public static boolean isArithmeticOp(String op) {
 		String[] arithmeticOps = { "+", "-", "*", "/", "||" };
@@ -31,7 +30,7 @@ public abstract class ColumnInfo {
 	protected final String _name;
 	protected final Relation _relation;
 
-	public ColumnInfo(String colName, Relation relation) {
+	public ColumnMetadata(String colName, Relation relation) {
 		_name = colName == null ? colName : colName.toLowerCase();
 		_relation = relation;
 	}
@@ -48,7 +47,6 @@ public abstract class ColumnInfo {
 	@Override
 	public abstract boolean equals(Object col);
 
-
 	public static ConstColumn getConstantColumn(String value)
 			throws DataLawyerException {
 		if (StringUtils.isInteger(value))
@@ -60,8 +58,8 @@ public abstract class ColumnInfo {
 		else if (StringUtils.isVarchar(value))
 			return new StringConstColumn(StringUtils.stripSingleQuotes(value));
 		else
-			throw new DataLawyerException("Could not determine the constant's type: "
-					+ value);
+			throw new DataLawyerException(
+					"Could not determine the constant's type: " + value);
 	}
 
 	public static DerivedColumn getDerivedColumn(String fnName,
@@ -76,12 +74,15 @@ public abstract class ColumnInfo {
 	}
 
 	public static boolean IsConstant(String value) {
-		return StringUtils.isInteger(value) || StringUtils.isDecimal(value) || StringUtils.isBoolean(value)
-				|| StringUtils.isVarchar(value);
+		return StringUtils.isInteger(value) || StringUtils.isDecimal(value)
+				|| StringUtils.isBoolean(value) || StringUtils.isVarchar(value);
 	}
 
 	/**
-	 * Print a string that can be used in a valid SQL statement.
+	 * Print a name that can be used in a valid SQL statement.
+	 * 
+	 * Look at descriptions of concrete classes thant implement this method to
+	 * see examples.
 	 * 
 	 * @return
 	 */
@@ -100,7 +101,7 @@ public abstract class ColumnInfo {
 
 	public abstract boolean equalsByTree(Tree tree);
 
-	public static boolean isAggregate(ColumnInfo info) {
+	public static boolean isAggregate(ColumnMetadata info) {
 		return (info instanceof AggColInfo);
 	}
 
@@ -119,7 +120,7 @@ public abstract class ColumnInfo {
 			return false;
 		if (input.hasColumn(c))
 			return true;
-		ColumnInfo cinfo = c.getInfo();
+		ColumnMetadata cinfo = c.getInfo();
 		if (cinfo instanceof AggColInfo)
 			return false;
 		else if (cinfo instanceof AliasColInfo)
@@ -135,7 +136,7 @@ public abstract class ColumnInfo {
 		} else if (cinfo instanceof IndexColInfo)
 			return false;
 		else
-			throw new DataLawyerException("Unsupported ColumnInfo type: "
+			throw new DataLawyerException("Unsupported ColumnMetadata type: "
 					+ cinfo.getClass().getSimpleName());
 	}
 
@@ -146,12 +147,12 @@ public abstract class ColumnInfo {
 			return false;
 		DerivedColumn drvdColInfo = (DerivedColumn) c.getInfo();
 		boolean isConstant = true;
-		for (Column inC: drvdColInfo.inputs)
+		for (Column inC : drvdColInfo.inputs)
 			isConstant &= isOverallConstant(inC);
 		return isConstant;
 	}
 
-	public abstract boolean equalsLogically(ColumnInfo rightColInfo);
+	public abstract boolean equalsLogically(ColumnMetadata rightColInfo);
 
 	public static boolean isIndexColumn(Column lastCol) {
 		return (lastCol.getInfo() instanceof IndexColInfo);
@@ -169,6 +170,9 @@ class DerivedArithmeticColumn extends DerivedColumn {
 		inputs.add(rightInput);
 	}
 
+	/**
+	 * Return "left-input-column arithmetic-binary-operator right-input-column"
+	 */
 	@Override
 	public String getNameAliased() {
 		return String.format("%s %s %s", inputs.get(0).getInfo()
@@ -197,7 +201,7 @@ class DerivedArithmeticColumn extends DerivedColumn {
 
 }
 
-class DerivedColumn extends ColumnInfo {
+class DerivedColumn extends ColumnMetadata {
 	protected String fnName;
 	public ArrayList<Column> inputs;
 
@@ -227,9 +231,9 @@ class DerivedColumn extends ColumnInfo {
 				return false;
 		return true;
 	}
-	
+
 	@Override
-	public boolean equalsLogically(ColumnInfo colInfo) {
+	public boolean equalsLogically(ColumnMetadata colInfo) {
 		if (colInfo == this)
 			return true;
 		if (colInfo == null)
@@ -247,7 +251,9 @@ class DerivedColumn extends ColumnInfo {
 		return true;
 	}
 
-
+	/**
+	 * Return operation(col1, col2, ..., colN) for a non-arithmetic operation.
+	 */
 	@Override
 	public String getNameAliased() {
 		String inputString = "";
@@ -278,7 +284,8 @@ class DerivedColumn extends ColumnInfo {
 
 		if (tree.getChildCount() != inputs.size() + 1)
 			return false;
-		// TODO: WHy did it initially start counting from 1 to inputs.size() (include both ends).
+		// TODO: WHy did it initially start counting from 1 to inputs.size()
+		// (include both ends).
 		for (int i = 0; i < inputs.size(); ++i) {
 			Column c = inputs.get(i);
 			if (!c.getInfo().equalsByTree(tree.getChild(i + 1)))
@@ -290,10 +297,10 @@ class DerivedColumn extends ColumnInfo {
 	public ArrayList<Column> getBaseColumns() {
 		ArrayList<Column> toRet = new ArrayList<Column>();
 		for (Column c : inputs) {
-			if (c.getInfo() instanceof DerivedColumn) { 
+			if (c.getInfo() instanceof DerivedColumn) {
 				DerivedColumn colInfo = (DerivedColumn) c.getInfo();
 				toRet.addAll(colInfo.getBaseColumns());
-			} else 
+			} else
 				toRet.add(c);
 		}
 		return toRet;
@@ -301,7 +308,7 @@ class DerivedColumn extends ColumnInfo {
 
 }
 
-abstract class ConstColumn extends ColumnInfo {
+abstract class ConstColumn extends ColumnMetadata {
 
 	public ConstColumn() {
 		super(null, null);
@@ -323,9 +330,9 @@ abstract class ConstColumn extends ColumnInfo {
 			return false;
 		return val.equalsIgnoreCase(this.getNameAliased());
 	}
-	
+
 	@Override
-	public final boolean equalsLogically(ColumnInfo colInfo) {
+	public final boolean equalsLogically(ColumnMetadata colInfo) {
 		return equals(colInfo);
 	}
 
@@ -339,6 +346,9 @@ class IntConstColumn extends ConstColumn {
 		_value = value;
 	}
 
+	/**
+	 * Return the integer.
+	 */
 	@Override
 	public String getNameAliased() {
 		return Integer.toString(_value);
@@ -364,6 +374,9 @@ class FloatConstColumn extends ConstColumn {
 		_value = value;
 	}
 
+	/**
+	 * Return the float.
+	 */
 	@Override
 	public String getNameAliased() {
 		return Float.toString(_value);
@@ -390,6 +403,9 @@ class StringConstColumn extends ConstColumn {
 		_value = value;
 	}
 
+	/**
+	 * 
+	 */
 	@Override
 	public String getNameAliased() {
 		return String.format("'%s'", _value);
@@ -433,9 +449,10 @@ class BoolConstColumn extends ConstColumn {
 
 }
 
-class IndexColInfo extends ColumnInfo {
+class IndexColInfo extends ColumnMetadata {
 
-	public IndexColInfo(String colName, Relation rid) throws DataLawyerException {
+	public IndexColInfo(String colName, Relation rid)
+			throws DataLawyerException {
 		super(colName, rid);
 		if (colName == null || rid == null)
 			throw new NullPointerException("Input arguments contain a null.");
@@ -492,9 +509,9 @@ class IndexColInfo extends ColumnInfo {
 		return true;
 
 	}
-	
+
 	@Override
-	public boolean equalsLogically(ColumnInfo colInfo) {
+	public boolean equalsLogically(ColumnMetadata colInfo) {
 		if (colInfo == this)
 			return true;
 		if (colInfo == null)
@@ -502,12 +519,14 @@ class IndexColInfo extends ColumnInfo {
 		if (!(colInfo instanceof IndexColInfo))
 			return false;
 		IndexColInfo indColInfo = (IndexColInfo) colInfo;
-		return _relation.getName().equalsIgnoreCase(indColInfo._relation.getName())
-				&& _name.equalsIgnoreCase(indColInfo._name);	}
+		return _relation.getName().equalsIgnoreCase(
+				indColInfo._relation.getName())
+				&& _name.equalsIgnoreCase(indColInfo._name);
+	}
 
 }
 
-class AggColInfo extends ColumnInfo {
+class AggColInfo extends ColumnMetadata {
 	public final UnaryOperation _op;
 
 	public AggColInfo(String opname, Column input) throws DataLawyerException {
@@ -541,9 +560,9 @@ class AggColInfo extends ColumnInfo {
 		AggColInfo aggCol = (AggColInfo) col;
 		return (_op.equals(aggCol._op));
 	}
-	
+
 	@Override
-	public boolean equalsLogically(ColumnInfo colInfo) {
+	public boolean equalsLogically(ColumnMetadata colInfo) {
 		if (colInfo == this)
 			return true;
 		if (colInfo == null)
@@ -551,9 +570,9 @@ class AggColInfo extends ColumnInfo {
 		if (!(colInfo instanceof AggColInfo))
 			return false;
 		AggColInfo aggColInfo = (AggColInfo) colInfo;
-		return (_op._op.equals(aggColInfo._op._op) && getSourceColumn().equalsLogically(aggColInfo.getSourceColumn()));
+		return (_op._op.equals(aggColInfo._op._op) && getSourceColumn()
+				.equalsLogically(aggColInfo.getSourceColumn()));
 	}
-
 
 	public Column getSourceColumn() {
 		return _op._inputIndex;
@@ -585,7 +604,7 @@ class AggColInfo extends ColumnInfo {
 
 }
 
-class AliasColInfo extends ColumnInfo {
+class AliasColInfo extends ColumnMetadata {
 
 	private final Column input;
 	private final boolean _isRenaming;
@@ -611,9 +630,9 @@ class AliasColInfo extends ColumnInfo {
 				&& this.input.equals(rename.input)
 				&& _isRenaming == rename._isRenaming;
 	}
-	
+
 	@Override
-	public boolean equalsLogically(ColumnInfo colInfo) {
+	public boolean equalsLogically(ColumnMetadata colInfo) {
 		if (colInfo == this)
 			return true;
 		if (colInfo == null)
@@ -624,14 +643,14 @@ class AliasColInfo extends ColumnInfo {
 		return input.equalsLogically(aliasColInfo.input);
 	}
 
-
 	@Override
 	public String getNameAliased() {
-		// TODO: Figure out what happens with the line below. Why does it not work?
-	//	return _relation.getName() + "." + _name;
+		// TODO: Figure out what happens with the line below. Why does it not
+		// work?
+		// return _relation.getName() + "." + _name;
 		if (_relation != null)
 			return _relation.getName() + "." + _name;
-		else 
+		else
 			return _name;
 	}
 

@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import parser.ParserWrapper;
 import relation.Column;
-import relation.ColumnInfo;
+import relation.ColumnMetadata;
 import relation.Relation;
 import relation.SQLUtils;
 import utils.DataLawyerException;
@@ -172,10 +172,10 @@ class LogUtils {
 						true, true);
 				boolean agg = false;
 				for (Column tempC : unrolledColumns)
-					if (ColumnInfo.isAggregate(tempC.getInfo()))
+					if (ColumnMetadata.isAggregate(tempC.getInfo()))
 						agg = true;
 				for (Column lastCol : unrolledColumns) {
-					if (!ColumnInfo.isIndexColumn(lastCol))
+					if (!ColumnMetadata.isIndexColumn(lastCol))
 						continue;
 					String irid = lastCol.getInfo().getRelation().getName();
 					String icid = lastCol.getInfo().getNameUnAliased();

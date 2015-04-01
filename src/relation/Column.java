@@ -1,51 +1,39 @@
 package relation;
 
 /**
- * This class is supposed to be immutable. Be careful about defining setters.
- * 
+ * Represent a column of a {@link Relation}.
+ *
+ * This class is immutable and meant to be so. Be careful about defining
+ * setters.
+ *
  * @author prasang
- * 
+ *
  */
 public class Column {
 
 	private final int _id;
 
-	private final ColumnInfo _info;
+	private final ColumnMetadata _info;
 
-	/**
-	 * @param id
-	 *            The id of the column.
-	 * @param metadata
-	 *            The metadata that contains the information about id.
-	 */
-	public Column(final ColumnInfo info, final Counters counters) {
+	public Column(final ColumnMetadata info, final Counters counters) {
 		if (info == null)
-			throw new IllegalArgumentException("ColumnInfo can not be null.");
-		_id = counters._nextColumnId.incrementAndGet();
-		_info = info;
+			throw new IllegalArgumentException("ColumnMetadata can not be null.");
+		_id = counters._nextColumnId.incrementAndGet(); // id of the column.
+		_info = info; // metadata about the column.
 	}
 
 	/*
-	public final boolean equalityByString(String name) {
-		String relname = null;
-		if (name.contains(".")) {
-			int dotindex = name.lastIndexOf('.');
-			relname = name.substring(0, dotindex);
-			name = name.substring(dotindex + 1);
-		}
-		if (relname == null) 
-			return getInfo().equalsByString(name);
-		else
-			return getInfo().equalsByString(name, relname);
-	}
-
-	public final boolean equalityByString(String opname, String name) {
-		if (!(getInfo() instanceof AggColInfo))
-			return false;
-		AggColInfo agginfo = (AggColInfo) getInfo();
-		return agginfo.equalityByOperatorAndColName(opname, name);
-	}
-	*/
+	 * public final boolean equalityByString(String name) { String relname =
+	 * null; if (name.contains(".")) { int dotindex = name.lastIndexOf('.');
+	 * relname = name.substring(0, dotindex); name = name.substring(dotindex +
+	 * 1); } if (relname == null) return getInfo().equalsByString(name); else
+	 * return getInfo().equalsByString(name, relname); }
+	 *
+	 * public final boolean equalityByString(String opname, String name) { if
+	 * (!(getInfo() instanceof AggColInfo)) return false; AggColInfo agginfo =
+	 * (AggColInfo) getInfo(); return
+	 * agginfo.equalityByOperatorAndColName(opname, name); }
+	 */
 
 	@Override
 	public final boolean equals(final Object o) {
@@ -58,16 +46,16 @@ public class Column {
 		return this._id == ((Column) o)._id;
 	}
 
-	public final ColumnInfo getInfo() {
+	public final ColumnMetadata getInfo() {
 		return _info;
 	}
 
 	public static Column getAliasedColumn(final OpAlias aliasRelation,
 			final String aliasName, final Column oldC, final Counters counters,
 			boolean isRenaming) {
-		AliasColInfo info = new AliasColInfo(aliasName,
-				aliasRelation, oldC, isRenaming);
-		
+		AliasColInfo info = new AliasColInfo(aliasName, aliasRelation, oldC,
+				isRenaming);
+
 		return new Column(info, counters);
 	}
 
@@ -87,7 +75,7 @@ public class Column {
 	/**
 	 * Print out a string that can be used in a valid SQL statement for this
 	 * query.
-	 * 
+	 *
 	 * @return
 	 */
 	public final String toSqlString() {

@@ -4,7 +4,13 @@ import java.util.ArrayList;
 
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to represent various aggregation operations defined as
+ * {@link UnaryOperation}.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpAgg extends Op {
 
 	public OpAgg(Relation op) throws DataLawyerException {
@@ -16,11 +22,9 @@ public class OpAgg extends Op {
 		if (op instanceof OpGroup) {
 			OpGroup gOp = (OpGroup) op;
 			for (Column c : gOp.getColumns().subList(0, gOp.nGroupingColumns))
-				appendColumn(c, new ColumnOptInfo(gOp.getColumnOptInfo(c)));
+				appendColumn(c, new ColumnOptMetadata(gOp.getColumnOptInfo(c)));
 		}
 	}
-	
-
 
 	/**
 	 * Given an aggregation operation, check if it truly is an aggregation
@@ -28,7 +32,7 @@ public class OpAgg extends Op {
 	 * columnReferenceTable.
 	 */
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo)
+	public void addOperation(Operation op, ColumnOptMetadata optinfo)
 			throws DataLawyerException {
 		if (op.numOperands() > 1)
 			throw new DataLawyerException(
@@ -36,11 +40,11 @@ public class OpAgg extends Op {
 		AggColInfo cinfo = new AggColInfo((UnaryOperation) op);
 		Column c = new Column(cinfo, counters);
 		operations().add(op);
-		appendColumn(c, new ColumnOptInfo(optinfo));
+		appendColumn(c, new ColumnOptMetadata(optinfo));
 	}
 
 	public boolean aggregatedByThisOperator(Column colId) {
-		ColumnInfo col = colId.getInfo();
+		ColumnMetadata col = colId.getInfo();
 		if (col instanceof AggColInfo)
 			return operations().contains(((AggColInfo) col)._op);
 		return false;
@@ -74,7 +78,8 @@ public class OpAgg extends Op {
 	}
 
 	@Override
-	public ArrayList<Column> sourceColumns(Column colId) throws DataLawyerException {
+	public ArrayList<Column> sourceColumns(Column colId)
+			throws DataLawyerException {
 
 		ArrayList<Column> sourceColIds = new ArrayList<Column>();
 		if (aggregatedByThisOperator(colId)) {
@@ -108,7 +113,7 @@ public class OpAgg extends Op {
 				columns_to_delete.add(cid);
 			else {
 				// If not directly copied, it must participate in an aggregate.
-				ColumnInfo col = cid.getInfo();
+				ColumnMetadata col = cid.getInfo();
 				if (col instanceof AggColInfo) {
 					AggColInfo aggCol = (AggColInfo) col;
 					if (aggCol._op.usesInput(colId))

@@ -5,15 +5,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import checker.Logs;
-import checker.PolicyTransformer;
-
 import parser.ParserWrapper;
 import utils.DataLawyerException;
 import utils.StringUtils;
+import checker.Logs;
+import checker.Policy;
 
-
-
+/**
+ * A large number of utility functions needed to easily design algorithms on
+ * {@link Relation}.
+ *
+ * @author prasang
+ *
+ */
 public class SQLUtils {
 
 	private static boolean activityLog(Relation index) {
@@ -24,7 +28,7 @@ public class SQLUtils {
 
 	/**
 	 * Modifies the given query to compute the hash of each output tuple.
-	 * 
+	 *
 	 * @param query
 	 * @return
 	 * @throws DataLawyerException
@@ -49,7 +53,7 @@ public class SQLUtils {
 
 	/**
 	 * Modifies the given query to compute the provenance expression.
-	 * 
+	 *
 	 * @param query
 	 * @return
 	 * @throws DataLawyerException
@@ -106,11 +110,12 @@ public class SQLUtils {
 
 	/**
 	 * Generates the corresponding SQL statement.
-	 * 
+	 *
 	 * @return The corresponding SQL statement as a String.
 	 * @throws DataLawyerException
 	 */
-	public static final String convertToSQL(Relation query) throws DataLawyerException {
+	public static final String convertToSQL(Relation query)
+			throws DataLawyerException {
 
 		if (query instanceof Index)
 			return ((Index) query).getName();
@@ -353,7 +358,8 @@ public class SQLUtils {
 			return unrolled.get(unrolled.size() - 1);
 	}
 
-	private static final Index getBaseIndex(Column c) throws DataLawyerException {
+	private static final Index getBaseIndex(Column c)
+			throws DataLawyerException {
 		if (c.getInfo() instanceof IndexColInfo)
 			return (Index) c.getInfo()._relation;
 		if (c.getInfo() instanceof ConstColumn)
@@ -366,7 +372,7 @@ public class SQLUtils {
 			AliasColInfo aliasinfo = (AliasColInfo) c.getInfo();
 			return getBaseIndex(aliasinfo.getInput());
 		}
-		throw new DataLawyerException("Unsuuported ColumnInfo type: "
+		throw new DataLawyerException("Unsuuported ColumnMetadata type: "
 				+ c.getInfo().getClass().getName());
 	}
 
@@ -408,7 +414,7 @@ public class SQLUtils {
 	/**
 	 * This does not consider the Clock as part of the usage log. So, the Clock
 	 * relation is always assumed to be present.
-	 * 
+	 *
 	 * @param policy
 	 * @param logs
 	 *            : The log-generating functions that are available.
@@ -458,7 +464,7 @@ public class SQLUtils {
 				&& policy instanceof OpProject)
 			;
 		else {
-			PolicyTransformer.normalizeAsBoolean(policy);
+			Policy.normalizeAsBoolean(policy);
 			splits.add(policy);
 		}
 
@@ -481,8 +487,9 @@ public class SQLUtils {
 		ArrayList<Column> toReturn = new ArrayList<Column>();
 		ArrayList<Relation> groups = getNodeType(query, OpGroup.class, false);
 		if (groups.size() > 1)
-			throw new DataLawyerException("More than one group bys in a query block: "
-					+ query.toString());
+			throw new DataLawyerException(
+					"More than one group bys in a query block: "
+							+ query.toString());
 		for (Relation input : groups) {
 			OpGroup group = (OpGroup) input;
 			toReturn.addAll(group.getColumns().subList(0,
@@ -539,28 +546,28 @@ public class SQLUtils {
 					Column newc = Column.getAliasedColumn(null, "aggcol_" + id,
 							c, prOp.counters, true);
 					prOp.appendColumn(newc,
-							new ColumnOptInfo(prOp.getColumnOptInfo(c)));
+							new ColumnOptMetadata(prOp.getColumnOptInfo(c)));
 					prOp.deleteColumn(c);
 					++id;
 				}
 			}
 
 			for (Column c : prOp.input(0).getColumns()) {
-				ColumnOptInfo inputoptinfo = prOp.input(0).getColumnOptInfo(c);
+				ColumnOptMetadata inputoptinfo = prOp.input(0).getColumnOptInfo(c);
 				if (inputoptinfo.isProvenance()) {
 					Column newc = Column.getAliasedColumn(null, "ctid_"
 							+ getBaseIndex(c).getId(), c, prOp.counters, true);
-					prOp.appendColumn(newc, new ColumnOptInfo(inputoptinfo));
+					prOp.appendColumn(newc, new ColumnOptMetadata(inputoptinfo));
 				}
 			}
 		} else if (query instanceof OpAlias) {
 			OpAlias alias = (OpAlias) query;
 			provenanceHelper(alias.input(0));
 			for (Column c : alias.input(0).getColumns()) {
-				ColumnOptInfo inputoptinfo = alias.input(0).getColumnOptInfo(c);
+				ColumnOptMetadata inputoptinfo = alias.input(0).getColumnOptInfo(c);
 				if (inputoptinfo.isProvenance())
 					alias.appendAfterAliasing(c,
-							new ColumnOptInfo(inputoptinfo));
+							new ColumnOptMetadata(inputoptinfo));
 			}
 		} else if (query instanceof OpExcept) { // TODO: Bad bad idea. Will
 												// break things.
@@ -568,14 +575,14 @@ public class SQLUtils {
 			provenanceHelper(except.input(0));
 			provenanceHelper(except.input(1));
 			for (Column c : except.input(0).getColumns()) {
-				ColumnOptInfo inputoptinfo = except.input(0)
+				ColumnOptMetadata inputoptinfo = except.input(0)
 						.getColumnOptInfo(c);
 				if (inputoptinfo.isProvenance())
-					except.appendColumn(c, new ColumnOptInfo(inputoptinfo));
+					except.appendColumn(c, new ColumnOptMetadata(inputoptinfo));
 			}
 		} else if (query instanceof Index) {
 			Index index = (Index) query;
-			ColumnOptInfo optinfo = new ColumnOptInfo();
+			ColumnOptMetadata optinfo = new ColumnOptMetadata();
 			optinfo.setProvenance(true);
 			index.appendColumn(new Column(new IndexColInfo("ctid", index),
 					index.counters), optinfo);
@@ -583,10 +590,10 @@ public class SQLUtils {
 			OpAgg agg = (OpAgg) query;
 			provenanceHelper(agg.input(0));
 			for (Column c : agg.input(0).getColumns()) {
-				ColumnOptInfo inputoptinfo = agg.input(0).getColumnOptInfo(c);
+				ColumnOptMetadata inputoptinfo = agg.input(0).getColumnOptInfo(c);
 				if (inputoptinfo.isProvenance()) {
 					UnaryOperation uop = Operation.getUnary("public.prov", c);
-					agg.addOperation(uop, new ColumnOptInfo(inputoptinfo));
+					agg.addOperation(uop, new ColumnOptMetadata(inputoptinfo));
 				}
 			}
 		} else if ((query instanceof OpWhere) || (query instanceof OpHaving)
@@ -595,7 +602,7 @@ public class SQLUtils {
 			for (Relation input : op.inputs()) {
 				provenanceHelper(input);
 				for (Column c : input.getColumns()) {
-					ColumnOptInfo inputoptinfo = input.getColumnOptInfo(c);
+					ColumnOptMetadata inputoptinfo = input.getColumnOptInfo(c);
 					if (inputoptinfo.isProvenance())
 						op.appendColumn(c, inputoptinfo);
 				}
@@ -663,7 +670,8 @@ public class SQLUtils {
 			else if (o instanceof OpAlias)
 				stringArray.add(((OpAlias) o).toSqlString());
 			else
-				throw new DataLawyerException("Can not convert query tree to SQL.");
+				throw new DataLawyerException(
+						"Can not convert query tree to SQL.");
 		return String.format("%s %s\n", prefix,
 				StringUtils.join(stringArray, delim));
 	}
@@ -678,7 +686,7 @@ public class SQLUtils {
 	/**
 	 * Gets the base relations used in this column. Base relations are either
 	 * ConstColumns or IndexColumns.
-	 * 
+	 *
 	 * @param column
 	 * @param unrollthroughalias
 	 * @param unrollthroughaggregate
@@ -691,7 +699,7 @@ public class SQLUtils {
 		ArrayList<Column> toret = new ArrayList<Column>();
 		if (column == null)
 			return null;
-		ColumnInfo info = column.getInfo();
+		ColumnMetadata info = column.getInfo();
 		if (info instanceof ConstColumn)
 			toret.add(column);
 		else if (info instanceof IndexColInfo)
@@ -710,7 +718,7 @@ public class SQLUtils {
 				toret.addAll(unrollColumn(c, unrollthroughalias,
 						unrollthroughaggregate));
 		} else {
-			throw new DataLawyerException("No such ColumnInfo supported: "
+			throw new DataLawyerException("No such ColumnMetadata supported: "
 					+ info.getClass().getSimpleName());
 		}
 		return toret;

@@ -4,26 +4,26 @@
 package checker;
 
 /**
+ * This is where the schema of the usage log is registered.
+ * 
+ * TODO: I wonder if we can automate this. Since this is an enum, it might not
+ * be possible to add new memebers to it.
+ * 
  * @author prasang
  * 
  */
 public enum Logs {
-	CLOCK("clock", null, "ts FLOAT8 PRIMARY KEY"),
-	OUTPUT("output", "output_temp", "qid INT, otid text, reqd BOOLEAN"), 
-	PROVENANCE(
+	CLOCK("clock", null, "ts FLOAT8 PRIMARY KEY"), OUTPUT("output",
+			"output_temp", "qid INT, otid text, reqd BOOLEAN"), PROVENANCE(
 			"provenance", "provenance_temp",
-			"qid INT, otid text, irid text, itid TID, reqd BOOLEAN"),
-	REJECTED(
+			"qid INT, otid text, irid text, itid TID, reqd BOOLEAN"), REJECTED(
 			"rejects", null,
-			"qid INT PRIMARY KEY, uid INT, ts FLOAT8, qstring text"),
-	SCHEMA(
+			"qid INT PRIMARY KEY, uid INT, ts FLOAT8, qstring text"), SCHEMA(
 			"schema", "schema_temp",
 			"qid INT, ocid text, icid text, irid text, "
-					+ "agg BOOLEAN, reqd BOOLEAN"),
-	USERS(
-			"users", "users_temp",
-			"qid INT PRIMARY KEY, uid INT, ts FLOAT8, "
-			+ "qstring text, reqd BOOLEAN");
+					+ "agg BOOLEAN, reqd BOOLEAN"), USERS("users",
+			"users_temp", "qid INT PRIMARY KEY, uid INT, ts FLOAT8, "
+					+ "qstring text, reqd BOOLEAN");
 
 	public static Logs of(final String name) {
 		for (Logs log : Logs.values())

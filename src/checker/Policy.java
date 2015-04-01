@@ -8,8 +8,8 @@ import java.util.Set;
 
 import relation.BinaryOperation;
 import relation.Column;
-import relation.ColumnInfo;
-import relation.ColumnOptInfo.Redundancy;
+import relation.ColumnMetadata;
+import relation.ColumnOptMetadata.Redundancy;
 import relation.Index;
 import relation.Op;
 import relation.OpAlias;
@@ -46,7 +46,7 @@ class PolicyParameters {
 			_requiredLogs.add(Logs.of(log));
 		_compactionQueries = compaction;
 		if (_requiredLogs.isEmpty())
-			assert (PolicyTransformer.isIncremental(policy, true));
+			assert (Policy.isIncremental(policy, true));
 		_incremental = _requiredLogs.isEmpty();
 		_partialPolicies = partialPolicies;
 	}
@@ -72,13 +72,25 @@ class PolicyParameters {
 }
 
 /**
- * The policy class. Stores policies and all sorts of static analysis on top of
+ * Represents a policy and provides functions to perform static analysis on
  * them.
+ * 
+ * Static analysis includes:
+ * 
+ * 1. Make policies boolean.
+ * 
+ * 2. Test time-independence.
+ * 
+ * 3. Minimize policies.
+ * 
+ * 4. Compute partial policies.
+ * 
+ * 5. TODO: Compute log compaction queries.
  * 
  * @author prasang
  * 
  */
-public class PolicyTransformer {
+public class Policy {
 
 	/**
 	 * Returns the smallest set of subqueries that make the policy
@@ -194,9 +206,9 @@ public class PolicyTransformer {
 			BinaryOperation bop = (BinaryOperation) op;
 			if (!op._op.equals(OpType.EQ))
 				continue;
-			ColumnInfo lcolinfo = SQLUtils.getBaseColumn(bop._leftInputIndex,
+			ColumnMetadata lcolinfo = SQLUtils.getBaseColumn(bop._leftInputIndex,
 					true, false).getInfo();
-			ColumnInfo rcolinfo = SQLUtils.getBaseColumn(bop._rightInputIndex,
+			ColumnMetadata rcolinfo = SQLUtils.getBaseColumn(bop._rightInputIndex,
 					true, false).getInfo();
 			if (key.equalsIgnoreCase(lcolinfo.getNameUnAliased())
 					&& key.equalsIgnoreCase(rcolinfo.getNameUnAliased())) {
@@ -234,7 +246,8 @@ public class PolicyTransformer {
 	 * @param query
 	 * @throws DataLawyerException
 	 */
-	public static void normalizeAsBoolean(Relation query) throws DataLawyerException {
+	public static void normalizeAsBoolean(Relation query)
+			throws DataLawyerException {
 		for (Column c : query.getColumns()) {
 			// TODO: This apparently does not work on constant columns? The hack
 			// we have is to treat Unknown and True as the same.
@@ -277,7 +290,7 @@ public class PolicyTransformer {
 	private final HashMap<Relation, PolicyParameters> policyMap;
 	private final ArrayList<Relation> storedSimplePolicies;
 
-	public PolicyTransformer() {
+	public Policy() {
 		policyMap = new HashMap<Relation, PolicyParameters>();
 		storedSimplePolicies = new ArrayList<Relation>();
 		partialPolicies = new HashMap<Relation, HashMap<String, ArrayList<String>>>();

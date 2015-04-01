@@ -2,10 +2,19 @@ package relation;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Generates unique ids for {@link Relation}s and {@link Column}s.
+ *
+ * These unique ids are used for: (a) fast equality testing. (b) computing
+ * hashcodes.
+ *
+ * @author prasang
+ *
+ */
 public class Counters {
-	
+
 	private static Counters uniqueCounter = null;
-	
+
 	/**
 	 * This generates unique column ids that are used to refer to columns. So,
 	 * each operator refers to each unique column through the same id. It is
@@ -21,15 +30,15 @@ public class Counters {
 	 * value of 0 to indicate the absence of a matching column.
 	 * */
 	public final AtomicInteger _nextRelationId;
-	
+
 	public final long timestamp;
-	
+
 	private Counters() {
 		_nextColumnId = new AtomicInteger(0);
 		_nextRelationId = new AtomicInteger(0);
 		timestamp = System.currentTimeMillis();
 	}
-	
+
 	@Override
 	public final boolean equals(Object o) {
 		if (o == this)
@@ -40,12 +49,12 @@ public class Counters {
 			return false;
 		return this.timestamp == ((Counters) o).timestamp;
 	}
-	
+
 	@Override
 	public final int hashCode() {
 		return (int) timestamp;
 	}
-	
+
 	public static Counters getCounters() {
 		if (uniqueCounter == null)
 			uniqueCounter = new Counters();
@@ -53,4 +62,3 @@ public class Counters {
 	}
 
 }
-

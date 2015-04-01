@@ -2,29 +2,34 @@ package relation;
 
 import java.util.ArrayList;
 
-import relation.ColumnOptInfo.Redundancy;
+import relation.ColumnOptMetadata.Redundancy;
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to represent the HAVING operator in SQL.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpHaving extends Op {
 	public OpHaving(Op input) throws DataLawyerException {
 		super("HAVING", input.counters);
 		_addInput(input);
 
 		for (Column cid : input.getColumns())
-			appendColumn(cid, new ColumnOptInfo(input.getColumnOptInfo(cid)));
+			appendColumn(cid, new ColumnOptMetadata(input.getColumnOptInfo(cid)));
 	}
 
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo) throws DataLawyerException {
+	public void addOperation(Operation op, ColumnOptMetadata optinfo) throws DataLawyerException {
 		if (!(op instanceof BinaryOperation))
 			throw DataLawyerException.operationNotAllowed();
 		BinaryOperation bop = (BinaryOperation) op;
 		operations().add(bop);
 		if (!hasColumn(bop._leftInputIndex))
-			addOptColInfo(bop._leftInputIndex, new ColumnOptInfo());
+			addOptColInfo(bop._leftInputIndex, new ColumnOptMetadata());
 		if (!hasColumn(bop._rightInputIndex))
-			addOptColInfo(bop._rightInputIndex, new ColumnOptInfo());
+			addOptColInfo(bop._rightInputIndex, new ColumnOptMetadata());
 	}
 
 	private boolean havingAppliedOnColumnByThisOperator(Column colId) {

@@ -2,12 +2,14 @@ package relation;
 
 import java.util.ArrayList;
 
-import relation.ColumnOptInfo.Redundancy;
+import relation.ColumnOptMetadata.Redundancy;
 import relation.Operation.OpType;
 import utils.DataLawyerException;
 
-
 /**
+ * Abstract class to model an operator. Requires as input a set of operations
+ * and a set of inputs.
+ * 
  * This formulation of the Operator allows us to create super-operators. This is
  * probably useful for representing unnormalized Datalog programs.
  * 
@@ -61,7 +63,7 @@ public abstract class Op extends Relation {
 		return cols_to_delete;
 	}
 
-	public abstract void addOperation(Operation op, ColumnOptInfo optinfo)
+	public abstract void addOperation(Operation op, ColumnOptMetadata optinfo)
 			throws DataLawyerException;
 
 	protected abstract boolean allOperationsEmpty();
@@ -76,7 +78,7 @@ public abstract class Op extends Relation {
 
 		// In the case of joins, there are implicit equality predicates which
 		// may be lost if we naively delete the equality predicate related to a
-		// deleted column. 
+		// deleted column.
 		if (this instanceof OpJoin) {
 			// TODO: Will fail in cases where the equality is done on derived
 			// columns or where an operation other than equality is used.
@@ -125,7 +127,7 @@ public abstract class Op extends Relation {
 						continue;
 					this.addOperation(Operation.getBinary("=",
 							otherColumnFirst, otherColumnSecond),
-							new ColumnOptInfo());
+							new ColumnOptMetadata());
 				}
 			}
 		}
@@ -190,7 +192,8 @@ public abstract class Op extends Relation {
 		return _operations;
 	}
 
-	public abstract void propagateRedundancyDownLocally() throws DataLawyerException;
+	public abstract void propagateRedundancyDownLocally()
+			throws DataLawyerException;
 
 	// Replaces the input child Relation at index childId by the Relation
 	// newInput.
@@ -252,7 +255,8 @@ public abstract class Op extends Relation {
 		return output;
 	}
 
-	public void deleteInput(Relation toDelete, boolean recursive) throws DataLawyerException {
+	public void deleteInput(Relation toDelete, boolean recursive)
+			throws DataLawyerException {
 		inputs().remove(toDelete);
 		toDelete._parent = null;
 		if (_parent == null)

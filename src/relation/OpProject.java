@@ -4,7 +4,16 @@ import java.util.ArrayList;
 
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to represent the SELECT clause in SQL.
+ * 
+ * It models the projection operation in relational algebra and works by only
+ * permitting a subset, possibly empty, of input columns to appear in the
+ * output.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpProject extends Op {
 
 	public OpProject(Relation input) throws DataLawyerException {
@@ -16,7 +25,7 @@ public class OpProject extends Op {
 	 * This operation is not supported.
 	 */
 	@Override
-	public final void addOperation(Operation op, ColumnOptInfo optinfo)
+	public final void addOperation(Operation op, ColumnOptMetadata optinfo)
 			throws DataLawyerException {
 		throw DataLawyerException.operationNotAllowed();
 	}
@@ -87,13 +96,16 @@ public class OpProject extends Op {
 				if (c.equals(cinfo.getInput()))
 					todelete.add(cout);
 				else if (cinfo.getInput().getInfo() instanceof DerivedColumn) {
-					DerivedColumn cinfo2 = (DerivedColumn) cinfo.getInput().getInfo();
-					// TODO: All this use of getBaseColumns needs to be improved.
-					// Right now, this assumes that the input of a DerivedColumn can
+					DerivedColumn cinfo2 = (DerivedColumn) cinfo.getInput()
+							.getInfo();
+					// TODO: All this use of getBaseColumns needs to be
+					// improved.
+					// Right now, this assumes that the input of a DerivedColumn
+					// can
 					// not be a DerviedColumn.
 					for (Column inputC : cinfo2.getBaseColumns())
 						if (c.equals(inputC))
-							todelete.add(cout);					
+							todelete.add(cout);
 				}
 			} else if (cout.getInfo() instanceof DerivedColumn) {
 				DerivedColumn cinfo = (DerivedColumn) cout.getInfo();

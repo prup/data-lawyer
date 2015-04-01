@@ -2,10 +2,15 @@ package relation;
 
 import java.util.ArrayList;
 
-import relation.ColumnOptInfo.Redundancy;
+import relation.ColumnOptMetadata.Redundancy;
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to represent the GROUP BY operator in SQL.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpGroup extends Op {
 
 	// Indicates the total number of grouping columns.
@@ -19,7 +24,7 @@ public class OpGroup extends Op {
 		// the output during construction. We reorder the columns as we come to
 		// know of which columns are the grouping columns.
 		for (Column cid : op.getColumns())
-			appendColumn(cid, new ColumnOptInfo(op.getColumnOptInfo(cid)));
+			appendColumn(cid, new ColumnOptMetadata(op.getColumnOptInfo(cid)));
 	}
 
 	/**
@@ -40,7 +45,7 @@ public class OpGroup extends Op {
 	}
 
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo) {
+	public void addOperation(Operation op, ColumnOptMetadata optinfo) {
 		// We do not mix the grouping and the aggregation operations.
 
 		// Check that the operation is a unary aggregation operation.

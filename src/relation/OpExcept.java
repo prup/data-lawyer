@@ -2,7 +2,7 @@ package relation;
 
 import java.util.ArrayList;
 
-import relation.ColumnOptInfo.Redundancy;
+import relation.ColumnOptMetadata.Redundancy;
 import utils.DataLawyerException;
 
 
@@ -22,7 +22,7 @@ public class OpExcept extends Op {
 			_addInput(second);
 		}
 		for (Column c : first.getColumns())
-			appendColumn(c, new ColumnOptInfo(first.getColumnOptInfo(c)));
+			appendColumn(c, new ColumnOptMetadata(first.getColumnOptInfo(c)));
 	}
 
 	static boolean unionCompatibility(Relation first, Relation second) {
@@ -45,7 +45,7 @@ public class OpExcept extends Op {
 	}
 
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo)
+	public void addOperation(Operation op, ColumnOptMetadata optinfo)
 			throws DataLawyerException {
 		throw DataLawyerException.operationNotAllowed();
 	}

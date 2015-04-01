@@ -4,7 +4,14 @@ import java.util.ArrayList;
 
 import utils.DataLawyerException;
 
-
+/**
+ * {@link Op} to alias SQL blocks.
+ * 
+ * It has a single child and a single output.
+ * 
+ * @author prasang
+ * 
+ */
 public class OpAlias extends Op {
 
 	public OpAlias(Relation input, String alias) throws DataLawyerException {
@@ -15,17 +22,17 @@ public class OpAlias extends Op {
 	}
 
 	public final void appendAfterAliasing(Column inputcolumn,
-			ColumnOptInfo optinfo) {
+			ColumnOptMetadata optinfo) {
 		// TODO: Also if inputColumn is of type that has no implicit output name
 		// (like Aggregates and Functions), assign a name automatically. Since
 		// the underlying Op must be OpProject rename inside the operator.
 		Column newCol = Column.getAliasedColumn(this, inputcolumn.getInfo()
 				.getNameUnAliased(), inputcolumn, counters, false);
-		appendColumn(newCol, new ColumnOptInfo(optinfo));
+		appendColumn(newCol, new ColumnOptMetadata(optinfo));
 	}
 
 	@Override
-	public void addOperation(Operation op, ColumnOptInfo optinfo)
+	public void addOperation(Operation op, ColumnOptMetadata optinfo)
 			throws DataLawyerException {
 		throw new DataLawyerException("Operation denied.");
 	}

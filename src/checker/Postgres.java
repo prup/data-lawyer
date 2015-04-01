@@ -19,6 +19,13 @@ import org.postgresql.util.PSQLException;
 
 import utils.MyLogger;
 
+/**
+ * Stands in for PostgreSQL. Maintains one persistent connection with the
+ * database to evaluate policies.
+ * 
+ * @author prasang
+ * 
+ */
 public class Postgres {
 
 	/**
@@ -42,7 +49,7 @@ public class Postgres {
 		db.close();
 
 		String test = "UPDATE TABLE %1$s AS t SET t.reqd = TRUE "
-				+ "FROM log_compaction AS l " 
+				+ "FROM log_compaction AS l "
 				+ "WHERE l.%2$s = r.tid AND t.reqd = FALSE";
 		System.out.println(String.format(test, "hey", "you"));
 	}
@@ -302,8 +309,7 @@ public class Postgres {
 	 * TODO: We aren't using schema. It's here for completeness.
 	 */
 	public final ArrayList<String> getColumns(final String table,
-			final String schema)
-			throws SQLException {
+			final String schema) throws SQLException {
 		Statement st = conn.createStatement();
 		ResultSet rset = null;
 		try {
@@ -358,8 +364,7 @@ public class Postgres {
 
 	public final void insertToQueryLog(final int qid, final String ocid,
 			final String icid, final String irid, final boolean toTemp,
-			final boolean agg, final boolean reqd)
-			throws SQLException {
+			final boolean agg, final boolean reqd) throws SQLException {
 		MyLogger.getLog().finest(
 				"Adding to query log: " + qid + " " + ocid + " " + icid + " "
 						+ irid + " " + agg);
@@ -506,7 +511,6 @@ public class Postgres {
 		}
 		return names;
 	}
-
 
 	private Random random1 = new Random();
 
