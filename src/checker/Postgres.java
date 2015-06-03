@@ -22,9 +22,9 @@ import utils.MyLogger;
 /**
  * Stands in for PostgreSQL. Maintains one persistent connection with the
  * database to evaluate policies.
- * 
+ *
  * @author prasang
- * 
+ *
  */
 public class Postgres {
 
@@ -60,9 +60,9 @@ public class Postgres {
 	private PreparedStatement _insertToQueryLog, _insertToUserLog,
 			_insertToQueryTempLog, _insertToUserTempLog;
 
-	private String password = "pluck";
-	private String schema = "mimic2v26";
-	private String user = "prasang";
+	private String password = "XXX";
+	private String schema = "XXX";
+	private String user = "XXX";
 
 	protected Postgres() throws ClassNotFoundException, SQLException {
 		Class.forName("org.postgresql.Driver");
@@ -305,7 +305,7 @@ public class Postgres {
 	/*
 	 * This function retrieves the column names belonging to a particular
 	 * relation from the metadata.
-	 * 
+	 *
 	 * TODO: We aren't using schema. It's here for completeness.
 	 */
 	public final ArrayList<String> getColumns(final String table,
